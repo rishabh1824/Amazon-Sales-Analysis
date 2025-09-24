@@ -335,9 +335,9 @@ with tabs[2]:
     st.subheader("Revenue by Category"); category_view(f)
     st.subheader("Top Products"); top_products(f, 15)
 
-with tabs[4]:
+with tabs[3]:
     st.subheader("Weekday × Hour Revenue"); timegrid(f)
-with tabs[5]:
+with tabs[4]:
     c1, c2 = st.columns(2)
     with c1:
         st.download_button("Download filtered data (CSV)",
@@ -350,9 +350,10 @@ with tabs[5]:
             st.download_button("Download customer aggregates (CSV)",
                                data=cust.reset_index().to_csv(index=False).encode("utf-8"),
                                file_name="customers_agg.csv")
-with tabs[6]:
+with tabs[5]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
 
 
 
