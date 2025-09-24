@@ -195,19 +195,94 @@ def timegrid(f):
 # -------------------------------
 # Sidebar — choose data source
 # -------------------------------
+from pathlib import Path
+
 st.sidebar.header("Data")
 mode = st.sidebar.selectbox("Load mode", ["Upload CSV/ZIP", "Use file path"])
 
-if mode == "Upload CSV/ZIP":
-    file = st.sidebar.file_uploader("Upload .csv or .zip (with a CSV inside)", type=["csv", "zip"])
-else:
-    file = st.sidebar.text_input("Path to .csv or .zip",
-                                 value=r"C:\Streamlit\data\Amazon_Sale_Report.zip")
+# Where is this script? We'll search relative to this.
+APP_DIR = Path(__file__).resolve().parent
 
-# Load
-df = load_csv(file) if file else pd.DataFrame()
-if df.empty:
-    st.warning("Load a CSV/ZIP to proceed."); st.stop()
+def resolve_path(user_text: str | None) -> Path | None:
+    """Resolve a user-entered or default path to an existing file in the repo."""
+    candidates: list[Path] = []
+
+    # 1) User-entered text (if provided)
+    if user_text:
+        p = Path(user_text)
+        candidates.append(p if p.is_absolute() else (APP_DIR / p))
+
+    # 2) Common repo-relative fallbacks (edit names if your repo differs)
+    candidates.extend([
+        APP_DIR / "Amazon_Sale_Report.zip",
+        APP_DIR / "Amazon_Sale_Report.csv",
+        APP_DIR / "data" / "Amazon_Sale_Report.zip",
+        APP_DIR / "data" / "Amazon_Sale_Report.csv",
+        APP_DIR.parent / "Amazon_Sale_Report.zip",       # if app.py is in Streamlit/
+        APP_DIR.parent / "Amazon_Sale_Report.csv",
+        APP_DIR.parent / "data" / "Amazon_Sale_Report.zip",
+        APP_DIR.parent / "data" / "Amazon_Sale_Report.csv",
+    ])
+
+    for c in candidates:
+        if c.exists():
+            return c
+    return None
+
+uploaded = None
+path_text = None
+
+if mode == "Upload CSV/ZIP":
+    uploaded = st.sidebar.file_uploader(
+        "Upload .csv or .zip (with a CSV inside)", type=["csv", "zip"]
+    )
+else:
+    # Use a repo-relative default that will work on Streamlit Cloud
+    path_text = st.sidebar.text_input(
+        "Path to .csv or .zip (repo-relative)",
+        value="Amazon_Sale_Report.zip"  # <- put this file in the same folder as app.py
+    )
+
+# -------------------------------
+# Load with robust fallbacks
+# -------------------------------
+try:
+    if uploaded is not None:
+        df = load_csv(uploaded)
+    else:
+        resolved = resolve_path(path_text)
+        if resolved is not None:
+            df = load_csv(str(resolved))
+        else:
+            st.warning("⚠ Could not locate the dataset in your repo. Using a generated sample dataset.")
+            dates = pd.date_range("2023-01-01", periods=200, freq="D")
+            df = pd.DataFrame({
+                "order_date": dates,
+                "order_id": range(1, 201),
+                "customer_id": np.random.choice([f"C{i}" for i in range(1, 21)], size=200),
+                "product_id": np.random.choice([f"P{i}" for i in range(1, 11)], size=200),
+                "product_name": np.random.choice(["Shirt","Shoes","Watch","Phone","Bag"], size=200),
+                "category": np.random.choice(["Fashion","Electronics","Accessories"], size=200),
+                "quantity": np.random.randint(1, 5, size=200),
+                "amount": np.random.randint(100, 1000, size=200)
+            })
+except Exception as e:
+    st.error("Failed to load the dataset. Falling back to a generated sample dataset.")
+    st.caption(f"(Details: {type(e).__name__})")
+    dates = pd.date_range("2023-01-01", periods=200, freq="D")
+    df = pd.DataFrame({
+        "order_date": dates,
+        "order_id": range(1, 201),
+        "customer_id": np.random.choice([f"C{i}" for i in range(1, 21)], size=200),
+        "product_id": np.random.choice([f"P{i}" for i in range(1, 11)], size=200),
+        "product_name": np.random.choice(["Shirt","Shoes","Watch","Phone","Bag"], size=200),
+        "category": np.random.choice(["Fashion","Electronics","Accessories"], size=200),
+        "quantity": np.random.randint(1, 5, size=200),
+        "amount": np.random.randint(100, 1000, size=200)
+    })
+
+# Clean after we have a dataframe
+df = clean(df)
 
 # Clean
 df = clean(df)
@@ -263,3 +338,4 @@ with tabs[5]:
 with tabs[6]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
