@@ -136,7 +136,7 @@ def kpis(f):
     c1,c2,c3,c4 = st.columns(4)
     c1.metric("Revenue", f"{rev:,.0f}")
     c2.metric("Orders", f"{orders:,}")
-    c3.metric("Customers", f"{custs:,}" if pd.notna(custs) else "—")
+
     c4.metric("AOV", f"{aov:,.0f}" if pd.notna(aov) else "—")
 
 def trend(f):
@@ -353,6 +353,7 @@ with tabs[5]:
 with tabs[6]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
 
 
 
