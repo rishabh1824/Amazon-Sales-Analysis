@@ -161,12 +161,12 @@ def top_products(f, n=15):
     g = f.groupby(cols)["revenue"].sum().sort_values(ascending=False).head(n).reset_index()
     st.dataframe(g, use_container_width=True)
 
-def repeat_rate(f):
-    if "order_id" not in f or "customer_id" not in f:
-        st.metric("Repeat purchase rate","—"); return
-    o = f.groupby("order_id", as_index=False).agg(customer_id=("customer_id","first"))
-    r = o["customer_id"].duplicated().mean()
-    st.metric("Repeat purchase rate", f"{r:.1%}")
+# def repeat_rate(f):
+#     if "order_id" not in f or "customer_id" not in f:
+#         st.metric("Repeat purchase rate","—"); return
+#     o = f.groupby("order_id", as_index=False).agg(customer_id=("customer_id","first"))
+#     r = o["customer_id"].duplicated().mean()
+#     st.metric("Repeat purchase rate", f"{r:.1%}")
 
 def rfm(f):
     if "customer_id" not in f or "order_date" not in f:
@@ -328,7 +328,7 @@ f = df[(df["order_date"] >= pd.to_datetime(d1)) & (df["order_date"] <= pd.to_dat
 tabs = st.tabs(["Overview","Trends","Categories & Products","Customers & RFM","Time Grid","Downloads","About"])
 
 with tabs[0]:
-    kpis(f); repeat_rate(f)
+    kpis(f); 
 with tabs[1]:
     st.subheader("Monthly Revenue Trend"); trend(f)
 with tabs[2]:
@@ -354,5 +354,6 @@ with tabs[5]:
 with tabs[6]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
 
 
