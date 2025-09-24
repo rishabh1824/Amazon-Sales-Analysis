@@ -130,7 +130,7 @@ def clean(df):
 # -------------------------------
 def kpis(f):
     orders = f["order_id"].nunique() if "order_id" in f else len(f)
-    custs = f["customer_id"].nunique() if "customer_id" in f else np.nan
+
     rev = float(f["revenue"].sum())
     aov = f.groupby("order_id")["revenue"].sum().mean() if "order_id" in f else np.nan
     c1,c2,c3,c4 = st.columns(4)
@@ -325,7 +325,7 @@ d1, d2 = st.slider(
 )
 f = df[(df["order_date"] >= pd.to_datetime(d1)) & (df["order_date"] <= pd.to_datetime(d2))].copy()
 
-tabs = st.tabs(["Overview","Trends","Categories & Products","Customers & RFM","Time Grid","Downloads","About"])
+tabs = st.tabs(["Overview","Trends","Categories & Products","Time Grid","Downloads","About"])
 
 with tabs[0]:
     kpis(f); 
@@ -334,8 +334,7 @@ with tabs[1]:
 with tabs[2]:
     st.subheader("Revenue by Category"); category_view(f)
     st.subheader("Top Products"); top_products(f, 15)
-with tabs[3]:
-    st.subheader("RFM Segmentation"); rfm(f)
+
 with tabs[4]:
     st.subheader("Weekday × Hour Revenue"); timegrid(f)
 with tabs[5]:
@@ -354,6 +353,7 @@ with tabs[5]:
 with tabs[6]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
 
 
 
