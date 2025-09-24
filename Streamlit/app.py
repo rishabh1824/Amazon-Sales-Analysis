@@ -286,7 +286,23 @@ df = clean(df)
 
 # Clean
 df = clean(df)
+# -------------------------------
+# Sidebar column mapping
+# -------------------------------
+st.sidebar.subheader("Column Mapping")
 
+col_order_date = st.sidebar.selectbox(
+    "Order Date", df.columns, index=df.columns.get_loc("order_date") if "order_date" in df else 0
+)
+col_customer = st.sidebar.selectbox(
+    "Customer ID", df.columns, index=df.columns.get_loc("customer_id") if "customer_id" in df else 0
+)
+
+# rename chosen columns to standard names
+df = df.rename(columns={
+    col_order_date: "order_date",
+    col_customer: "customer_id"
+})
 # -------------------------------
 # Main
 # -------------------------------
@@ -338,4 +354,5 @@ with tabs[5]:
 with tabs[6]:
     st.markdown("Single-CSV analysis for Amazon Seller data: cleaning, KPIs, trends, "
                 "category/product insights, repeat behavior, RFM, and time grid.")
+
 
